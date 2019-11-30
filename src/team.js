@@ -3,8 +3,8 @@ class Team {
 
   currentSession = null
 
-  constructor(name) {
-    this.name = name;
+  constructor(id) {
+    this.id = id;
   }
 
   setSession(session) {
@@ -17,7 +17,7 @@ class Team {
 
   serialize() {
     return {
-      name: this.name,
+      id: this.id,
     }
   }
 

@@ -16,6 +16,7 @@ app.get('/health', (req, res) => {
   res.send('ok');
 });
 
+let globalGame;
 const teamA = new Team('teamA');
 const teamB = new Team('teamB');
 
@@ -25,9 +26,10 @@ const teamB = new Team('teamB');
 const gameDoors = [4];
 const gameOrder = [0];
 
-let players = [];
-
 const wait = (t) => new Promise((resolve) => setTimeout(resolve, t));
+
+const adminNamespace = io.of('/admin');
+const userNamespace = io.of('/user');
 
 const getNewOrder = (previousOutcome, gameOrderIndex) => {
   if (previousOutcome === 'success') {
@@ -44,7 +46,7 @@ const createNewSession = (game, previousOutcome, team) => {
     (previousSession && previousSession.gameOrderIndex) || 0
   );
 
-  if (newGameOrder < gameOrder.length) {
+  if (previousOutcome !== 'end') {
     const session = new Session(
       game,
       team,
@@ -54,14 +56,39 @@ const createNewSession = (game, previousOutcome, team) => {
 
     team.setSession(session);
     console.log(`Next tile. Status: ${previousOutcome}`);
+
+    adminNamespace.emit(
+      'game-update',
+      {
+        team: team.serialize(),
+        previousOutcome,
+      }
+    )
+    userNamespace.emit(
+      'game-update',
+      {
+        team: team.serialize(),
+        previousOutcome,
+        gameOrder: game.gameOrder[newGameOrder]
+      }
+    )
   } else {
     team.setSession(null);
     game.end(team);
+
+    adminNamespace.emit(
+      'game-update',
+      { team: team.serialize() }
+    )
+    userNamespace.emit(
+      'game-update',
+      { team: team.serialize() }
+    )
+
     console.log('End tile');
   }
 }
 
-const adminNamespace = io.of('/admin');
 adminNamespace.on('connection', function(socket){
   const admin = new Admin(socket.id, socket);
   console.log(`${admin.id} connected`);
@@ -76,21 +103,21 @@ adminNamespace.on('connection', function(socket){
   });
 
   socket.on('game-init', async () => {
-    const game = new Game(gameDoors, gameOrder);
-    createNewSession(game, null, teamA);
-    createNewSession(game, null, teamB);
-
+    globalGame = new Game(gameDoors, gameOrder);
     console.log('Starting game...');
 
-    socket.emit('game-init', { game });
+    createNewSession(globalGame, null, teamA);
+    createNewSession(globalGame, null, teamB);
+
+    socket.emit('game-init', { game: globalGame });
 
     await wait(1000);
 
     socket.emit('game-start');
+    console.log('Game started...');
   });
 });
 
-const userNamespace = io.of('/user');
 userNamespace.on('connection', (socket) => {
   const player = new Player(socket.id, socket);
   let playerTeam;
@@ -107,27 +134,27 @@ userNamespace.on('connection', (socket) => {
   socket.on('join', (msg) => {
     const { team } = JSON.parse(msg);
 
-    playerTeam = teamA;
+    if (team !== 'teamA' && team !== 'teamB') {
+      console.log(`${player.id} tried to join ${team} but didn't succeed`);
 
-    // if (team !== 'teamA' && team !== 'teamB') {
-    //   console.log(`${player.id} tried to join ${team} but didn't succeed`);
+      return;
+    }
 
-    //   return;
-    // }
-
-    // if (team === 'teamA') {
-    //   playerTeam = teamA;
-    // } else if (team === 'teamB') {
-    //   playerTeam = teamB;
-    // }
+    if (team === 'teamA') {
+      playerTeam = teamA;
+    } else if (team === 'teamB') {
+      playerTeam = teamB;
+    }
 
     playerTeam.addPlayer(player);
     console.log(`${player.id} joined ${team}`);
   });
 
   socket.on('submit', (msg) => {
-    if (playerTeam.getSession() === null) {
+    if (globalGame.status === 'end') {
       console.log(`${player.id} wanted to submit to finished session`);
+
+      return;
     }
 
     const { doorIndex } = JSON.parse(msg);
