@@ -82,11 +82,11 @@ const createNewSession = (game, previousOutcome, team) => {
     game.end(team);
 
     adminNamespace.emit(
-      'game-update',
+      'game-end',
       { team: team.serialize() }
     )
     userNamespace.emit(
-      'game-update',
+      'game-end',
       { team: team.serialize() }
     )
 
