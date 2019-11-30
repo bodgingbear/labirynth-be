@@ -28,6 +28,10 @@ class Team {
   removePlayer(player) {
     this.players = this.players.filter(currentPlayer => currentPlayer.id !== player.id);
   }
+
+  static findById(teams, id) {
+    return teams.find((team) => team.id === id);
+  }
 }
 
 module.exports = { Team };

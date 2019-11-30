@@ -19,7 +19,15 @@ app.get('/health', (req, res) => {
 const wait = (t) => new Promise((resolve) => setTimeout(resolve, t));
 
 const teamIds = ['teamA', 'teamB'];
-const teams = teamIds.map(teamId => new Team(teamId));
+let teams = teamIds.map(teamId => new Team(teamId));
+let globalGame;
+
+app.get('/reset', (req, res) => {
+  teams = teamIds.map(teamId => new Team(teamId));
+  globalGame = null;
+
+  res.send('done');
+});
 
 // /*
 const gameDoors = [4,8,4, 7,11,1, 4,4,0];
@@ -32,7 +40,6 @@ const gameDoors = [4];
 const gameOrder = [0];
 //*/
 
-let globalGame;
 const adminNamespace = io.of('/admin');
 const userNamespace = io.of('/user');
 
@@ -67,6 +74,7 @@ const createNewSession = (game, previousOutcome, team) => {
       {
         team: team.serialize(),
         previousOutcome,
+        gameOrder: game.gameOrder[newGameOrder]
       }
     )
     userNamespace.emit(
@@ -74,7 +82,6 @@ const createNewSession = (game, previousOutcome, team) => {
       {
         team: team.serialize(),
         previousOutcome,
-        gameOrder: game.gameOrder[newGameOrder]
       }
     )
   } else {
@@ -146,18 +153,18 @@ userNamespace.on('connection', (socket) => {
     }
 
     try {
-      const { team: teamID } = JSON.parse(msg);
+      const { team: teamId } = JSON.parse(msg);
 
-      if (!teamIds.includes(teamID)) {
-        console.log(`${player.id} tried to join ${teamID} but didn't succeed`);
+      if (!teamIds.includes(teamId)) {
+        console.log(`${player.id} tried to join ${teamId} but didn't succeed`);
 
         return;
       }
 
-      playerTeam = teams.find((team) => team.id === teamID);
+      playerTeam = Team.findById(teams, teamId);
 
       playerTeam.addPlayer(player);
-      console.log(`${player.id} joined ${teamID}`);
+      console.log(`${player.id} joined ${teamId}`);
     } catch (error) {
       console.error('An error occurred while joining', error);
     }
