@@ -10,7 +10,7 @@ const { Team } = require('./team');
 const { Session } = require('./session');
 const { Game } = require('./game');
 
-const { PORT } = process.env;
+const { PORT, TIME_FOR_LOOKING } = process.env;
 
 app.get('/health', (req, res) => {
   res.send('ok');
@@ -24,6 +24,9 @@ const teams = teamIds.map(teamId => new Team(teamId));
 // /*
 const gameDoors = [4,8,4, 7,11,1, 4,4,0];
 const gameOrder = [0, 1, 4, 3, 6, 7, 8, 5, 9];
+
+// const gameDoors = [6, 4, 4, 3, 4, 1, 4, 4, 1];
+// const gameOrder = [0, 3, 4, 5, 2];
 /*/
 const gameDoors = [4];
 const gameOrder = [0];
