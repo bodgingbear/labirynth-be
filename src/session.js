@@ -47,7 +47,7 @@ class Session {
       return this.onSessionFinish('error');
     }
 
-    if (this.gameOrderIndex < this.game.gameDoors.length - 1) {
+    if (this.gameOrderIndex < this.game.gameOrder.length - 1) {
       return this.onSessionFinish('success');
     }
 
