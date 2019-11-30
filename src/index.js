@@ -10,7 +10,7 @@ const { Team } = require('./team');
 const { Session } = require('./session');
 const { Game } = require('./game');
 
-const { APP_PORT } = process.env;
+const { PORT } = process.env;
 
 app.get('/health', (req, res) => {
   res.send('ok');
@@ -169,7 +169,6 @@ userNamespace.on('connection', (socket) => {
   });
 });
 
-
-http.listen(APP_PORT, () => {
+http.listen(PORT, () => {
   console.log(`Listening on port ${APP_PORT}`);
 });
