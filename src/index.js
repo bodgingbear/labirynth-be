@@ -23,7 +23,7 @@ const teams = teamIds.map(teamId => new Team(teamId));
 
 // /*
 const gameDoors = [4,8,4, 7,11,1, 4,4,0];
-const gameOrder = [0, 1, 4, 3, 6, 7, 8, 5, 9];
+const gameOrder = [0, 1, 4, 3, 6, 7, 8, 5, 2];
 
 // const gameDoors = [6, 4, 4, 3, 4, 1, 4, 4, 1];
 // const gameOrder = [0, 3, 4, 5, 2];
@@ -113,7 +113,6 @@ adminNamespace.on('connection', async (socket) => {
 
       teams.forEach(team => {
         createNewSession(globalGame, null, team);
-        createNewSession(globalGame, null, team);
       })
 
       socket.emit('game-init', { game: globalGame });
@@ -173,7 +172,7 @@ userNamespace.on('connection', (socket) => {
 
     try {
       const parsed = JSON.parse(msg);
-      const doorIndex = Number.parseInt(parsed, 10);
+      const doorIndex = Number.parseInt(parsed.doorIndex, 10);
       console.log(`${player.id} submitted`);
 
       const currentSession = playerTeam.getSession();
