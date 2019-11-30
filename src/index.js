@@ -170,5 +170,5 @@ userNamespace.on('connection', (socket) => {
 });
 
 http.listen(PORT, () => {
-  console.log(`Listening on port ${APP_PORT}`);
+  console.log(`Listening on port ${PORT}`);
 });
