@@ -172,7 +172,8 @@ userNamespace.on('connection', (socket) => {
     }
 
     try {
-      const { doorIndex } = JSON.parse(msg);
+      const parsed = JSON.parse(msg);
+      const doorIndex = Number.parseInt(parsed, 10);
       console.log(`${player.id} submitted`);
 
       const currentSession = playerTeam.getSession();
