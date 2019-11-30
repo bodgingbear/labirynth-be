@@ -16,18 +16,20 @@ app.get('/health', (req, res) => {
   res.send('ok');
 });
 
-let globalGame;
-const teamA = new Team('teamA');
-const teamB = new Team('teamB');
-
-// const gameDoors = [4,8,4, 7,11,1, 4,4,0];
-// const gameOrder = [0, 1, 4, 3, 6, 7, 8, 5, 9];
-
-const gameDoors = [4];
-const gameOrder = [0];
-
 const wait = (t) => new Promise((resolve) => setTimeout(resolve, t));
 
+const teamIds = ['teamA', 'teamB'];
+const teams = teamIds.map(teamId => new Team(teamId));
+
+// /*
+const gameDoors = [4,8,4, 7,11,1, 4,4,0];
+const gameOrder = [0, 1, 4, 3, 6, 7, 8, 5, 9];
+/*/
+const gameDoors = [4];
+const gameOrder = [0];
+//*/
+
+let globalGame;
 const adminNamespace = io.of('/admin');
 const userNamespace = io.of('/user');
 
@@ -89,7 +91,7 @@ const createNewSession = (game, previousOutcome, team) => {
   }
 }
 
-adminNamespace.on('connection', function(socket){
+adminNamespace.on('connection', async (socket) => {
   const admin = new Admin(socket.id, socket);
   console.log(`${admin.id} connected`);
 
@@ -97,24 +99,29 @@ adminNamespace.on('connection', function(socket){
     console.log(`${admin.id} disconnected`);
   });
 
-  socket.emit('teams', {
-    teamA: teamA.serialize(),
-    teamB: teamB.serialize(),
-  });
+  socket.emit('teams', Object.fromEntries(
+    teams.map((team) => [team.id, team.serialize()])
+  ));
 
   socket.on('game-init', async () => {
-    globalGame = new Game(gameDoors, gameOrder);
-    console.log('Starting game...');
+    try {
+      globalGame = new Game(gameDoors, gameOrder);
+      console.log('Starting game...');
 
-    createNewSession(globalGame, null, teamA);
-    createNewSession(globalGame, null, teamB);
+      teams.forEach(team => {
+        createNewSession(globalGame, null, team);
+        createNewSession(globalGame, null, team);
+      })
 
-    socket.emit('game-init', { game: globalGame });
+      socket.emit('game-init', { game: globalGame });
 
-    await wait(1000);
+      await wait(TIME_FOR_LOOKING);
 
-    socket.emit('game-start');
-    console.log('Game started...');
+      socket.emit('game-start');
+      console.log('Game started...');
+    } catch (error) {
+      console.error('An error occurred while starting game', error);
+    }
   });
 });
 
@@ -132,33 +139,37 @@ userNamespace.on('connection', (socket) => {
   });
 
   socket.on('join', (msg) => {
-    const { team } = JSON.parse(msg);
-
-    if (team !== 'teamA' && team !== 'teamB') {
-      console.log(`${player.id} tried to join ${team} but didn't succeed`);
-
-      return;
+    if (globalGame && globalGame.status === 'end') {
+      return console.log(`${player.id} tried to join game but the game isn't started`);
     }
 
-    if (team === 'teamA') {
-      playerTeam = teamA;
-    } else if (team === 'teamB') {
-      playerTeam = teamB;
-    }
+    try {
+      const { team: teamID } = JSON.parse(msg);
 
-    playerTeam.addPlayer(player);
-    console.log(`${player.id} joined ${team}`);
+      if (!teamIds.includes(teamID)) {
+        console.log(`${player.id} tried to join ${teamID} but didn't succeed`);
+
+        return;
+      }
+
+      playerTeam = teams.find((team) => team.id === teamID);
+
+      playerTeam.addPlayer(player);
+      console.log(`${player.id} joined ${teamID}`);
+    } catch (error) {
+      console.error('An error occurred while joining', error);
+    }
   });
 
   socket.on('submit', (msg) => {
-    if (globalGame.status === 'end') {
+    if (globalGame && globalGame.status === 'end') {
       console.log(`${player.id} wanted to submit to finished session`);
 
       return;
     }
 
-    const { doorIndex } = JSON.parse(msg);
     try {
+      const { doorIndex } = JSON.parse(msg);
       console.log(`${player.id} submitted`);
 
       const currentSession = playerTeam.getSession();
