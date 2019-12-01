@@ -43,7 +43,7 @@ class Session {
       }
     );
 
-    if (valid < invalid) {
+    if (valid <= invalid) {
       return this.onSessionFinish('error');
     }
 
