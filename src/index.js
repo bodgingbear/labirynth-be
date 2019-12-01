@@ -120,6 +120,7 @@ adminNamespace.on('connection', async (socket) => {
       await wait(globalGame.time);
 
       socket.emit('game-start');
+      userNamespace.emit('game-start')
       console.log('Game started...');
     } catch (error) {
       console.error('An error occurred while starting game', error);
