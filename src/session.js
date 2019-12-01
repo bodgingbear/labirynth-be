@@ -67,6 +67,10 @@ class Session {
     }
   }
 
+  removeVote(player) {
+    delete this.votes[player.id];
+  }
+
   disable() {
     this.disabled = true;
   }

@@ -146,7 +146,11 @@ userNamespace.on('connection', (socket) => {
   socket.on('disconnect', function () {
     console.log(`${player.id} disconnected`);
 
+
     if (playerTeam) {
+      const currentSession = playerTeam.getSession();
+      currentSession.removeVote(player);
+
       playerTeam.removePlayer(player);
       adminNamespace.emit('squad-update', { team: playerTeam.id, count: playerTeam.players.length })
     }
