@@ -62,8 +62,6 @@ class Session {
   submit(player, doorIndex) {
     this.votes[player.id] = doorIndex;
 
-    console.log(this.votes, player.id);
-
     if (Object.keys(this.votes).length >= this.team.players.length) {
       this.notifyWatcher(doorIndex);
     }
