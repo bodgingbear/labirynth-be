@@ -77,6 +77,10 @@ const createNewSession = (game, previousOutcome, team) => {
       }
     )
   } else {
+    if (game.uuid !== globalGame.uuid) {
+      return;
+    }
+
     team.setSession(null);
     game.end(team);
 

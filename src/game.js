@@ -17,6 +17,7 @@ class Game {
   constructor() {
     this.status = 'running';
     this.onEnd = () => {};
+    this.uuid = Math.random();
 
     const filteredCombinations = combinations.reduce((acc, curr, i) => {
       if (usedCombinations.includes(i)) {
