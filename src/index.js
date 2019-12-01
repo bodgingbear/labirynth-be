@@ -164,6 +164,8 @@ userNamespace.on('connection', (socket) => {
       playerTeam = Team.findById(teams, teamId);
 
       playerTeam.addPlayer(player);
+
+      adminNamespace.emit('squad-update', { team: teamId, count: playerTeam.players.length })
       console.log(`${player.id} joined ${teamId}`);
     } catch (error) {
       console.error('An error occurred while joining', error);
