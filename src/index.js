@@ -10,7 +10,7 @@ const { Team } = require('./team');
 const { Session } = require('./session');
 const { Game } = require('./game');
 
-const { PORT, TIME_FOR_LOOKING } = process.env;
+const { PORT } = process.env;
 
 app.get('/health', (req, res) => {
   res.send('ok');
@@ -63,7 +63,8 @@ const createNewSession = (game, previousOutcome, team) => {
       {
         team: team.serialize(),
         previousOutcome,
-        gameOrder: game.gameOrder[newGameOrder]
+        gameOrder: game.gameOrder[newGameOrder],
+        time: game.time,
       }
     )
     userNamespace.emit(
