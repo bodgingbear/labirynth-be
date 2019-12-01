@@ -7,6 +7,7 @@ class Session {
 
     this.votes = {};
     this.listeners = [];
+    this.disabled = false;
   }
 
   checkValidity(doorIndex) {
@@ -16,6 +17,10 @@ class Session {
   }
 
   notifyWatcher() {
+    if (this.disabled) {
+      return;
+    }
+
     const {
       valid,
       invalid
@@ -43,7 +48,7 @@ class Session {
       }
     );
 
-    if (valid < invalid) {
+    if (valid <= invalid) {
       return this.onSessionFinish('error');
     }
 
@@ -60,6 +65,14 @@ class Session {
     if (Object.keys(this.votes).length >= this.team.players.length) {
       this.notifyWatcher(doorIndex);
     }
+  }
+
+  removeVote(player) {
+    delete this.votes[player.id];
+  }
+
+  disable() {
+    this.disabled = true;
   }
 }
 
