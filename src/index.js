@@ -149,7 +149,9 @@ userNamespace.on('connection', (socket) => {
 
     if (playerTeam) {
       const currentSession = playerTeam.getSession();
-      currentSession.removeVote(player);
+      if (currentSession) {
+        currentSession.removeVote(player);
+      }
 
       playerTeam.removePlayer(player);
       adminNamespace.emit('squad-update', { team: playerTeam.id, count: playerTeam.players.length })
