@@ -119,6 +119,10 @@ adminNamespace.on('connection', async (socket) => {
       console.log('Starting game...');
 
       teams.forEach(team => {
+        if (team && team.getSession()) {
+          team.getSession().disable();
+        }
+
         createNewSession(globalGame, null, team);
       })
 
@@ -144,6 +148,7 @@ userNamespace.on('connection', (socket) => {
 
     if (playerTeam) {
       playerTeam.removePlayer(player);
+      adminNamespace.emit('squad-update', { team: playerTeam.id, count: playerTeam.players.length })
     }
   });
 
