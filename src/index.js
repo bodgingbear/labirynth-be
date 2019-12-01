@@ -29,17 +29,6 @@ app.get('/reset', (req, res) => {
   res.send('done');
 });
 
-// /*
-const gameDoors = [4,8,4, 7,11,1, 4,4,0];
-const gameOrder = [0, 1, 4, 3, 6, 7, 8, 5, 2];
-
-// const gameDoors = [6, 4, 4, 3, 4, 1, 4, 4, 1];
-// const gameOrder = [0, 3, 4, 5, 2];
-/*/
-const gameDoors = [4];
-const gameOrder = [0];
-//*/
-
 const adminNamespace = io.of('/admin');
 const userNamespace = io.of('/user');
 
@@ -115,7 +104,7 @@ adminNamespace.on('connection', async (socket) => {
 
   socket.on('game-init', async () => {
     try {
-      globalGame = new Game(gameDoors, gameOrder);
+      globalGame = new Game();
       console.log('Starting game...');
 
       teams.forEach(team => {
@@ -128,7 +117,7 @@ adminNamespace.on('connection', async (socket) => {
 
       socket.emit('game-init', { game: globalGame });
 
-      await wait(TIME_FOR_LOOKING);
+      await wait(globalGame.time);
 
       socket.emit('game-start');
       console.log('Game started...');
