@@ -21,10 +21,15 @@ const wait = (t) => new Promise((resolve) => setTimeout(resolve, t));
 const teamIds = ['teamA', 'teamB'];
 let teams = teamIds.map(teamId => new Team(teamId));
 let globalGame;
+const sessions = [];
 
 app.get('/reset', (req, res) => {
   teams = teamIds.map(teamId => new Team(teamId));
   globalGame = null;
+
+  sessions.forEach((s) => {
+    s.gameOrderIndex = 0;
+  });
 
   res.send('done');
 });
@@ -42,6 +47,8 @@ const getNewOrder = (previousOutcome, gameOrderIndex) => {
 
 const createNewSession = (game, previousOutcome, team) => {
   const previousSession = team.getSession();
+  console.log(previousSession);
+
   const newGameOrder = getNewOrder(
     previousOutcome,
     (previousSession && previousSession.gameOrderIndex) || 0
@@ -54,6 +61,7 @@ const createNewSession = (game, previousOutcome, team) => {
       (outcome) => createNewSession(game, outcome, team),
       newGameOrder,
     );
+    sessions.push(session);
 
     team.setSession(session);
     console.log(`Next tile. Status: ${previousOutcome}`);
@@ -75,10 +83,6 @@ const createNewSession = (game, previousOutcome, team) => {
       }
     )
   } else {
-    if (game.uuid !== globalGame.uuid) {
-      return;
-    }
-
     team.setSession(null);
     game.end(team);
 
@@ -111,6 +115,10 @@ adminNamespace.on('connection', async (socket) => {
     try {
       globalGame = new Game();
       console.log('Starting game...');
+
+      sessions.forEach((s) => {
+        s.gameOrderIndex = 0;
+      });
 
       teams.forEach(team => {
         if (team && team.getSession()) {
