@@ -30,8 +30,10 @@ app.get('/reset', (req, res) => {
 });
 
 // /*
-const gameDoors = [4,8,4, 7,11,1, 4,4,0];
-const gameOrder = [0, 1, 4, 3, 6, 7, 8, 5, 2];
+// const gameDoors = [4,8,4, 7,11,1, 4,4,0];
+// const gameOrder = [0, 1, 4, 3, 6, 7, 8, 5, 2];
+const gameDoors = [4, 4, 4, 7, 10, 10, 10, 7, 4, 4, 4, 7, 10, 10, 10, 10];
+const gameOrder = [0, 1, 2, 3, 7, 6, 5, 4, 8, 9, 10, 11, 15, 14, 13, 12];
 
 // const gameDoors = [6, 4, 4, 3, 4, 1, 4, 4, 1];
 // const gameOrder = [0, 3, 4, 5, 2];
