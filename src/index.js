@@ -10,7 +10,7 @@ const { Team } = require('./team');
 const { Session } = require('./session');
 const { Game } = require('./game');
 
-const { PORT, TIME_FOR_LOOKING } = process.env;
+const { PORT } = process.env;
 
 app.get('/health', (req, res) => {
   res.send('ok');
@@ -48,6 +48,8 @@ const createNewSession = (game, previousOutcome, team) => {
   );
 
   if (previousOutcome !== 'end') {
+    console.log(previousSession);
+
     const session = new Session(
       game,
       team,
@@ -63,7 +65,8 @@ const createNewSession = (game, previousOutcome, team) => {
       {
         team: team.serialize(),
         previousOutcome,
-        gameOrder: game.gameOrder[newGameOrder]
+        gameOrder: game.gameOrder[newGameOrder],
+        time: game.time,
       }
     )
     userNamespace.emit(
@@ -107,11 +110,9 @@ adminNamespace.on('connection', async (socket) => {
       globalGame = new Game();
       console.log('Starting game...');
 
-      teams.forEach(team => {
-        if (team && team.getSession()) {
-          team.getSession().disable();
-        }
+      teams = teamIds.map(teamId => new Team(teamId));
 
+      teams.forEach((team) => {
         createNewSession(globalGame, null, team);
       })
 
