@@ -48,6 +48,8 @@ const createNewSession = (game, previousOutcome, team) => {
   );
 
   if (previousOutcome !== 'end') {
+    console.log(previousSession);
+
     const session = new Session(
       game,
       team,
@@ -108,11 +110,9 @@ adminNamespace.on('connection', async (socket) => {
       globalGame = new Game();
       console.log('Starting game...');
 
-      teams.forEach(team => {
-        if (team && team.getSession()) {
-          team.getSession().disable();
-        }
+      teams = teamIds.map(teamId => new Team(teamId));
 
+      teams.forEach((team) => {
         createNewSession(globalGame, null, team);
       })
 
